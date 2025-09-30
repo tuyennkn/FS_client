@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { commentAPI } from '../../services/apiService';
-import { Comment, CreateCommentRequest, UpdateCommentRequest, ApiResponse } from '../../types/user';
+import { Comment, CreateCommentRequest, UpdateCommentRequest } from '../../types/user';
+import { API_ENDPOINTS } from '@/constants/apiEndpoints';
+import { apiService } from '@/services/apiService';
+import { ApiResponse } from '@/types';
 
 export interface CommentState {
   comments: Comment[];
@@ -21,7 +23,7 @@ export const fetchComments = createAsyncThunk(
   'comments/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<Comment[]> = await commentAPI.getAll();
+      const response: ApiResponse<Comment[]> = await apiService.get(API_ENDPOINTS.COMMENT.ALL);
       if (response.success) {
         return response.data;
       } else {
@@ -37,7 +39,7 @@ export const fetchCommentsByBook = createAsyncThunk(
   'comments/fetchByBook',
   async (bookId: string, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<Comment[]> = await commentAPI.getByBook(bookId);
+      const response: ApiResponse<Comment[]> = await apiService.get(API_ENDPOINTS.COMMENT.GET_BY_BOOK(bookId));
       if (response.success) {
         return response.data;
       } else {
@@ -53,7 +55,7 @@ export const createComment = createAsyncThunk(
   'comments/create',
   async (commentData: CreateCommentRequest, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<Comment> = await commentAPI.create(commentData);
+      const response: ApiResponse<Comment> = await apiService.post(API_ENDPOINTS.COMMENT.CREATE, commentData);
       if (response.success) {
         return response.data;
       } else {
@@ -69,7 +71,7 @@ export const updateComment = createAsyncThunk(
   'comments/update',
   async ({ id, data }: { id: string; data: UpdateCommentRequest }, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<Comment> = await commentAPI.update(id, data);
+      const response: ApiResponse<Comment> = await apiService.put(API_ENDPOINTS.COMMENT.UPDATE(id), data);
       if (response.success) {
         return response.data;
       } else {
@@ -85,7 +87,7 @@ export const deleteComment = createAsyncThunk(
   'comments/delete',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<any> = await commentAPI.delete(id);
+      const response: ApiResponse<any> = await apiService.delete(API_ENDPOINTS.COMMENT.DELETE(id));
       if (response.success) {
         return id;
       } else {

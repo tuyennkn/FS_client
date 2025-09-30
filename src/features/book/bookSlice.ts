@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { bookAPI } from '../../services/apiService';
-import { Book, ApiResponse } from '../../types/user';
+import { Book } from '../../types/user';
+import { apiService } from '@/services/apiService';
+import { API_ENDPOINTS } from '@/constants/apiEndpoints';
+import { ApiResponse } from '@/types';
 
 export interface BookState {
   books: Book[];
@@ -33,7 +35,7 @@ export const fetchBooks = createAsyncThunk(
   'books/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<Book[]> = await bookAPI.getAll();
+      const response: ApiResponse<Book[]> = await apiService.get(API_ENDPOINTS.BOOK.ALL);
       if (response.success) {
         return response.data;
       } else {
@@ -49,7 +51,7 @@ export const fetchBookById = createAsyncThunk(
   'books/fetchById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<Book> = await bookAPI.getById(id);
+      const response: ApiResponse<Book> = await apiService.get(`${API_ENDPOINTS.BOOK.GET_BY_ID}/${id}`);
       if (response.success) {
         return response.data;
       } else {

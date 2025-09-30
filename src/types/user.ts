@@ -1,9 +1,6 @@
-// Base types
-export interface BaseEntity {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { BaseEntity } from ".";
+import { Category } from "./category";
+
 
 // User types
 export interface User extends BaseEntity {
@@ -48,28 +45,38 @@ export interface RegisterRequest {
   address?: string;
 }
 
-// Category types
-export interface Category extends BaseEntity {
-  name: string;
-  description: string;
-  isDisable: boolean;
+// Book attributes
+export interface BookAttributes {
+  isbn?: string;
+  publisher?: string;
+  firstPublishDate?: string;
+  publishDate?: string;
+  pages?: number;
+  language?: string;
+  edition?: string;
+  bookFormat?: string;
+  characters?: string[];
+  awards?: string[];
 }
 
 // Book types
 export interface Book extends BaseEntity {
   title: string;
   author: string;
-  summary: string;
-  publisher: string;
+  description: string; // Changed from summary
+  slug: string; // New required field
+  publisher?: string; // Keep for backward compatibility, moved to attributes
   price: number;
   rating: number;
-  category_id: Category | string | null;
-  summaryvector?: string;
+  category: Category | string | null;
+  genre: string; // New field
+  embedding?: number[]; // Changed from summaryvector
   quantity: number;
   sold: number;
   isDisable: boolean;
-  imageUrl?: string;
+  image?: string[]; // Changed from imageUrl to array
   score?: number; // For search results
+  attributes?: BookAttributes; // New attributes object
 }
 
 // Comment types
@@ -90,23 +97,4 @@ export interface UpdateCommentRequest {
   content: string;
 }
 
-// API Response types
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-  statusCode: number;
-}
 
-export interface PaginatedResponse<T> {
-  success: boolean;
-  message: string;
-  data: {
-    items: T[];
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-  };
-  statusCode: number;
-}

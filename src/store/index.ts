@@ -5,6 +5,8 @@ import categoryReducer from '../features/category/categorySlice';
 import bookReducer from '../features/book/bookSlice';
 import commentReducer from '../features/comment/commentSlice';
 import searchReducer from '../features/search/searchSlice';
+import cartReducer from '../features/cart/cartSlice';
+import orderReducer from '../features/order/orderSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +16,8 @@ export const store = configureStore({
     books: bookReducer,
     comments: commentReducer,
     search: searchReducer,
+    cart: cartReducer,
+    orders: orderReducer,
   },
 });
 

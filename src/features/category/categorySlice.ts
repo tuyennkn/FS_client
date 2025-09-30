@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { categoryAPI } from '../../services/apiService';
-import { Category, ApiResponse } from '../../types/user';
+import { apiService } from '@/services/apiService';
+import { API_ENDPOINTS } from '@/constants/apiEndpoints';
+import { Category } from '@/types/category';
+import { ApiResponse } from '@/types';
 
 export interface CategoryState {
   categories: Category[];
@@ -21,7 +23,7 @@ export const fetchCategories = createAsyncThunk(
   'categories/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<Category[]> = await categoryAPI.getAll();
+      const response: ApiResponse<Category[]> = await apiService.get(API_ENDPOINTS.CATEGORY.ALL);
       if (response.success) {
         return response.data;
       } else {
@@ -37,7 +39,7 @@ export const fetchCategoryById = createAsyncThunk(
   'categories/fetchById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<Category> = await categoryAPI.getById(id);
+      const response: ApiResponse<Category> = await apiService.post(API_ENDPOINTS.CATEGORY.GET_BY_ID, { id });
       if (response.success) {
         return response.data;
       } else {

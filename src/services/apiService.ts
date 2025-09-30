@@ -5,14 +5,9 @@ import {
   LoginRequest, 
   LoginResponse, 
   RegisterRequest,
-  User,
-  Category,
-  Book,
-  Comment,
-  CreateCommentRequest,
-  UpdateCommentRequest,
-  ApiResponse
+  User
 } from '../types/user';
+import { ApiResponse } from '@/types';
 
 const api = axios.create({
   baseURL: API_ENDPOINTS.BASE_URL,
@@ -48,8 +43,10 @@ api.interceptors.response.use(
         // handle logout
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
         console.error('Refresh token failed', err);
+        if(window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
@@ -115,102 +112,51 @@ export const userAPI = {
   },
 };
 
-// Category methods (read-only for client)
-export const categoryAPI = {
-  getAll: async (): Promise<ApiResponse<Category[]>> => {
-    const response = await api.get(
-      API_ENDPOINTS.CATEGORY.ALL
-    );
-    return response.data as ApiResponse<Category[]>;
-  },
-
-  getById: async (id: string): Promise<ApiResponse<Category>> => {
-    const response = await api.post(
-      API_ENDPOINTS.CATEGORY.GET_BY_ID,
-      { id }
-    );
-    return response.data as ApiResponse<Category>;
-  },
-};
-
-// Book methods (read-only for client)
-export const bookAPI = {
-  getAll: async (): Promise<ApiResponse<Book[]>> => {
-    const response = await api.get(
-      API_ENDPOINTS.BOOK.ALL
-    );
-    return response.data as ApiResponse<Book[]>;
-  },
-
-  getById: async (id: string): Promise<ApiResponse<Book>> => {
-    const response = await api.get(
-      `${API_ENDPOINTS.BOOK.GET_BY_ID}/${id}`
-    );
-    return response.data as ApiResponse<Book>;
-  },
-
-  search: async (query: string): Promise<ApiResponse<Book[]>> => {
-    const response = await api.post(
-      API_ENDPOINTS.BOOK.SEMATIC_SEARCH,
-      { query }
-    );
-    // Filter books by title, author, or summary containing the query
-    const books = response.data.data || [];
-    console.log(response.data)
-    // const filteredBooks = books.filter((book: Book) => 
-    //   book.title?.toLowerCase().includes(query.toLowerCase()) ||
-    //   book.author?.toLowerCase().includes(query.toLowerCase()) ||
-    //   book.summary?.toLowerCase().includes(query.toLowerCase())
-    // );
-    return { ...response.data } as ApiResponse<Book[]>;
-  },
-};
-
-// Comment methods (full CRUD for user's own comments)
-export const commentAPI = {
-  getAll: async (): Promise<ApiResponse<Comment[]>> => {
-    const response = await api.get(
-      API_ENDPOINTS.COMMENT.ALL
-    );
-    return response.data as ApiResponse<Comment[]>;
-  },
-
-  getByBook: async (bookId: string): Promise<ApiResponse<Comment[]>> => {
-    const response = await api.get(
-      `${API_ENDPOINTS.COMMENT.GET_BY_BOOK}/${bookId}`
-    );
-    return response.data as ApiResponse<Comment[]>;
-  },
-
-  create: async (commentData: CreateCommentRequest): Promise<ApiResponse<Comment>> => {
-    const response = await api.post(
-      API_ENDPOINTS.COMMENT.CREATE,
-      commentData
-    );
-    return response.data as ApiResponse<Comment>;
-  },
-
-  update: async (id: string, commentData: UpdateCommentRequest): Promise<ApiResponse<Comment>> => {
-    const response = await api.put(
-      `${API_ENDPOINTS.COMMENT.UPDATE}/${id}`,
-      commentData
-    );
-    return response.data as ApiResponse<Comment>;
-  },
-
-  delete: async (id: string): Promise<ApiResponse<any>> => {
-    const response = await api.delete(
-      `${API_ENDPOINTS.COMMENT.DELETE}/${id}`
-    );
-    return response.data as ApiResponse<any>;
-  },
-};
-
+// ApiService with generic methods
 export const apiService = {
-  get: <T = any>(url: string, config?: any) => api.get<T>(url, config),
-  post: <T = any>(url: string, data?: any, config?: any) => api.post<T>(url, data, config),
-  put: <T = any>(url: string, data?: any, config?: any) => api.put<T>(url, data, config),
-  delete: <T = any>(url: string, config?: any) => api.delete<T>(url, config),
-  patch: <T = any>(url: string, data?: any, config?: any) => api.patch<T>(url, data, config),
-  request: <T = any>(config: any) => api.request<T>(config),
+  get: async <T>(url: string, config?: any): Promise<T> => {
+    const res = await api.get<T>(url, config);
+    return res.data;
+  },
+  post: async <T>(url: string, data?: any, config?: any): Promise<T> => {
+    const res = await api.post<T>(url, data, config);
+    return res.data;
+  },
+  put: async <T>(url: string, data?: any, config?: any): Promise<T> => {
+    const res = await api.put<T>(url, data, config);
+    return res.data;
+  },
+  patch: async <T>(url: string, data?: any, config?: any): Promise<T> => {
+    const res = await api.patch<T>(url, data, config);
+    return res.data;
+  },
+  delete: async <T>(url: string, config?: any): Promise<T> => {
+    const res = await api.delete<T>(url, config);
+    return res.data;
+  },
+  uploadFile: async <T>(
+    url: string,
+    file: File,
+    onProgress?: (progress: number) => void,
+    config?: any
+  ): Promise<T> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await api.post<T>(url, formData, {
+      ...config,
+      headers: {
+        ...config?.headers,
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (e) => {
+        if (onProgress && e.total) {
+          const progress = Math.round((e.loaded / e.total) * 100);
+          onProgress(progress);
+        }
+      },
+    });
+
+    return res.data;
+  },
 };

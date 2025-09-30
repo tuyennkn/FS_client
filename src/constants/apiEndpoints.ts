@@ -21,22 +21,43 @@ export const API_ENDPOINTS = {
   // Category endpoints
   CATEGORY: {
     ALL: '/category/allCategories',
-    GET_BY_ID: '/category/getCategory',
+    GET_BY_ID: '/category/getCategory'
   },
   
   // Book endpoints
   BOOK: {
     ALL: '/book/all',
+    FEATURED: '/book/featured',
     GET_BY_ID: '/book/getBook',
+    GET_BY_SLUG: '/book/getBook',
     SEMATIC_SEARCH: '/book/search',
+    SEARCH_FILTERS: '/book/search-filters',
+  },
+  
+  // Cart endpoints
+  CART: {
+    GET: '/cart',
+    ADD: '/cart/add',
+    UPDATE: '/cart/update',
+    REMOVE: '/cart/remove',
+    CLEAR: '/cart/clear',
+  },
+  
+  // Order endpoints
+  ORDER: {
+    CREATE: '/order/create',
+    CREATE_DIRECT: '/order/create-direct',
+    MY_ORDERS: '/order/my-orders',
+    GET_BY_ID: '/order',
   },
   
   // Comment endpoints
   COMMENT: {
     ALL: '/comment/all',
     CREATE: '/comment/create',
-    GET_BY_BOOK: '/comment/book',
-    UPDATE: '/comment/update',
-    DELETE: '/comment/delete',
+    UPDATE: (id: string) => `/comment/update/${id}`,
+    DELETE: (id: string) => `/comment/delete/${id}`,
+    GET_BY_ID: (id: string) => `/comment/${id}`,
+    GET_BY_BOOK: (bookId: string) => `/comment/book/${bookId}`,
   },
 };

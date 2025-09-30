@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { bookAPI } from '../../services/apiService';
-import { Book } from '../../types/user';
+import { Book } from '@/types/book';
+import { apiService } from '@/services/apiService';
+import { API_ENDPOINTS } from '@/constants/apiEndpoints';
+import { SearchResponse } from '@/types/book';
 
 interface SearchState {
   query: string;
@@ -23,7 +25,9 @@ export const searchBooks = createAsyncThunk(
   'search/searchBooks',
   async (query: string, { rejectWithValue }) => {
     try {
-      const response = await bookAPI.search(query);
+      const response = await apiService.post<SearchResponse>(API_ENDPOINTS.BOOK.SEMATIC_SEARCH, {
+        query,
+      });
       if (response.success) {
         return response.data;
       } else {
@@ -60,7 +64,7 @@ const searchSlice = createSlice({
       })
       .addCase(searchBooks.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.results = action.payload;
+        state.results = action.payload as Book[];
         state.hasSearched = true;
         state.error = null;
       })

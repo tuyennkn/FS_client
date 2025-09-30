@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authAPI } from '../../services/apiService';
-import { LoginRequest, RegisterRequest, User, LoginResponse, ApiResponse } from '../../types/user';
-import { setAccessToken, setRefreshToken, clearTokens } from '../../utils/tokenUtils';
+import { LoginRequest, RegisterRequest, User, LoginResponse } from '../../types/user';
+import { setAccessToken, setRefreshToken, clearTokens, setUserInfo } from '../../utils/tokenUtils';
+import { ApiResponse } from '@/types';
 
 export interface AuthState {
   user: User | null;
@@ -26,6 +27,7 @@ export const login = createAsyncThunk(
       if (response.success) {
         setAccessToken(response.data.accessToken);
         setRefreshToken(response.data.refreshToken);
+        setUserInfo(response.data.user);
         return response.data;
       } else {
         return rejectWithValue(response.message);
