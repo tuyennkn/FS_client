@@ -16,13 +16,19 @@ export interface Order {
   user_id: string;
   items: OrderItem[];
   total_price: number;
+  shipping_fee: number;
+  shipping_address: string;
+  shipping_phone_number: string;
   payment_type: 'cash' | 'card' | 'online';
-  status: string;
-  created_at: Date;
-  updated_at: Date;
+  status: 'pending' | 'confirmed' | 'processing' | 'shipping' | 'delivered' | 'cancelled';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreateOrderRequest {
+  shipping_address: string;
+  shipping_phone_number: string;
+  shipping_fee?: number;
   payment_type?: 'cash' | 'card' | 'online';
 }
 
@@ -33,6 +39,9 @@ export interface CreateDirectOrderRequest {
     price: number;
   }[];
   total_price: number;
+  shipping_address: string;
+  shipping_phone_number: string;
+  shipping_fee?: number;
   payment_type?: 'cash' | 'card' | 'online';
 }
 

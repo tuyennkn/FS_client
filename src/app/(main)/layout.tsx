@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { fetchCart } from "@/features/cart/cartSlice";
 import { useAppSelector } from "@/hooks/redux";
 import { fetchCategories } from "@/features/category/categorySlice";
+import { getUserInfo } from "@/utils/tokenUtils";
 
 export default function RootLayout({
     children,
@@ -19,15 +20,12 @@ export default function RootLayout({
 
     // if logged in, fetch cart data
     useEffect(() => {
-        if (user) {
+        const userInfo = getUserInfo();
+        dispatch(fetchCategories());
+        if (userInfo) {
             dispatch(fetchCart());
         }
     }, [dispatch, user]);
-
-    // Additional fetch categories if needed
-    useEffect(() => {
-        dispatch(fetchCategories());
-    }, [dispatch]);
 
     return (
         <div className="flex min-h-screen flex-col">

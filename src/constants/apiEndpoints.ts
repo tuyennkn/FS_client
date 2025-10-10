@@ -1,5 +1,5 @@
 export const API_ENDPOINTS = {
-  BASE_URL: 'http://localhost:8080/router',
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/router',
   
   // Auth endpoints
   AUTH: {
@@ -13,9 +13,9 @@ export const API_ENDPOINTS = {
   
   // User endpoints
   USER: {
-    ME: '/user/me',
-    GET_BY_ID: '/user/getUser',
-    UPDATE: '/user/update',
+    ME: '/auth/me',
+    GET_BY_ID: (id: string) => `/user/${id}`,
+    UPDATE: (id: string) => `/user/${id}`,
   },
   
   // Category endpoints

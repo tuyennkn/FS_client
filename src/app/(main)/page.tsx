@@ -37,11 +37,11 @@ export default function Home() {
         {/* Hero Section */}
         <section className="text-center mb-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            Discover Your Next Great Read
+            Khám phá cuốn sách tiếp theo của bạn
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Explore our curated collection of books from bestsellers to hidden gems.
-            Find the perfect book for every mood and moment.
+            Khám phá bộ sưu tập sách được tuyển chọn của chúng tôi từ những bestseller đến những viên ngọc ẩn.
+            Tìm cuốn sách hoàn hảo cho mọi tâm trạng và khoảnh khắc.
           </p>
 
           {user ? (
@@ -49,23 +49,23 @@ export default function Home() {
               <Link href="/books">
                 <Button size="lg" className="flex items-center">
                   <BookOpen className="h-5 w-5 mr-2" />
-                  Browse Books
+                  Duyệt sách
                 </Button>
               </Link>
               <Link href="/cart">
                 <Button variant="outline" size="lg" className="flex items-center">
                   <ShoppingBag className="h-5 w-5 mr-2" />
-                  View Cart
+                  Xem giỏ hàng
                 </Button>
               </Link>
             </div>
           ) : (
             <div className="flex gap-4 justify-center">
               <Link href="/login">
-                <Button size="lg">Sign In</Button>
+                <Button size="lg">Đăng nhập</Button>
               </Link>
               <Link href="/register">
-                <Button variant="outline" size="lg">Create Account</Button>
+                <Button variant="outline" size="lg">Tạo tài khoản</Button>
               </Link>
             </div>
           )}
@@ -76,15 +76,15 @@ export default function Home() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Featured Books
+                Sách nổi bật
               </h2>
               <p className="text-gray-600">
-                Discover our top-rated and bestselling books
+                Khám phá những cuốn sách được đánh giá cao và bán chạy nhất
               </p>
             </div>
             <Link href="/books">
               <Button variant="outline">
-                View All Books
+                Xem tất cả sách
               </Button>
             </Link>
           </div>
@@ -118,21 +118,21 @@ export default function Home() {
                 <BookOpen className="h-8 w-8 text-accent" />
               </div>
               <h3 className="text-2xl font-semibold">50,000+</h3>
-              <p className="text-muted-foreground">Books in our collection</p>
+              <p className="text-muted-foreground">Sách trong bộ sưu tập</p>
             </div>
             <div className="space-y-4">
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto">
                 <Users className="h-8 w-8 text-accent" />
               </div>
               <h3 className="text-2xl font-semibold">100,000+</h3>
-              <p className="text-muted-foreground">Happy readers worldwide</p>
+              <p className="text-muted-foreground">Độc giả hài lòng trên toàn thế giới</p>
             </div>
             <div className="space-y-4">
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto">
                 <Award className="h-8 w-8 text-accent" />
               </div>
-              <h3 className="text-2xl font-semibold">25 Years</h3>
-              <p className="text-muted-foreground">Of literary excellence</p>
+              <h3 className="text-2xl font-semibold">25 năm</h3>
+              <p className="text-muted-foreground">Xuất sắc về văn học</p>
             </div>
           </div>
         </div>
@@ -142,22 +142,21 @@ export default function Home() {
       <section className="py-20 px-4 bg-primary text-primary-foreground">
         <div className="container max-w-3xl mx-auto text-center space-y-8">
           <h2 className="text-3xl md:text-4xl font-serif font-medium text-balance">
-            Join our community of book lovers
+            Tham gia cộng đồng yêu sách của chúng tôi
           </h2>
           <p className="text-lg opacity-90 leading-relaxed">
-            Get personalized recommendations, exclusive access to author events, and special member discounts on your
-            favorite titles.
+            Nhận được những gợi ý cá nhân hóa, quyền truy cập độc quyền vào các sự kiện tác giả, và giảm giá đặc biệt dành cho thành viên trên những cuốn sách yêu thích của bạn.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" className="px-8">
-              Create Account
+              Tạo tài khoản
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="px-8 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary bg-transparent"
             >
-              Learn More
+              Tìm hiểu thêm
             </Button>
           </div>
         </div>

@@ -49,29 +49,29 @@ export default function RegisterPage() {
         const errors: Record<string, string> = {};
 
         if (!formData.username.trim()) {
-            errors.username = 'Username is required';
+            errors.username = 'Tên đăng nhập là bắt buộc';
         } else if (formData.username.length < 3) {
-            errors.username = 'Username must be at least 3 characters';
+            errors.username = 'Tên đăng nhập phải có ít nhất 3 ký tự';
         }
 
         if (!formData.fullname.trim()) {
-            errors.fullname = 'Full name is required';
+            errors.fullname = 'Họ và tên là bắt buộc';
         }
 
         if (!formData.email.trim()) {
-            errors.email = 'Email is required';
+            errors.email = 'Email là bắt buộc';
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            errors.email = 'Must be a valid email';
+            errors.email = 'Email phải có định dạng hợp lệ';
         }
 
         if (!formData.password) {
-            errors.password = 'Password is required';
+            errors.password = 'Mật khẩu là bắt buộc';
         } else if (formData.password.length < 6) {
-            errors.password = 'Password must be at least 6 characters';
+            errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
         }
 
         if (formData.phone && !/^[0-9]{10,11}$/.test(formData.phone)) {
-            errors.phone = 'Phone number must be 10-11 digits';
+            errors.phone = 'Số điện thoại phải có 10-11 chữ số';
         }
 
         setValidationErrors(errors);
@@ -141,10 +141,10 @@ export default function RegisterPage() {
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl font-bold text-center">
-                        Create Account
+                        Tạo tài khoản
                     </CardTitle>
                     <CardDescription className="text-center">
-                        Sign up to get started with your account
+                        Đăng ký để bắt đầu với tài khoản của bạn
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -158,11 +158,11 @@ export default function RegisterPage() {
 
                         {/* Username Field */}
                         <div className="space-y-2">
-                            <Label htmlFor="username">Username *</Label>
+                            <Label htmlFor="username">Tên đăng nhập *</Label>
                             <Input
                                 id="username"
                                 type="text"
-                                placeholder="Enter your username"
+                                placeholder="Nhập tên đăng nhập"
                                 value={formData.username}
                                 onChange={handleInputChange('username')}
                                 className={validationErrors.username ? 'border-red-500' : ''}
@@ -175,11 +175,11 @@ export default function RegisterPage() {
 
                         {/* Full Name Field */}
                         <div className="space-y-2">
-                            <Label htmlFor="fullname">Full Name *</Label>
+                            <Label htmlFor="fullname">Họ và tên *</Label>
                             <Input
                                 id="fullname"
                                 type="text"
-                                placeholder="Enter your full name"
+                                placeholder="Nhập họ và tên"
                                 value={formData.fullname}
                                 onChange={handleInputChange('fullname')}
                                 className={validationErrors.fullname ? 'border-red-500' : ''}
@@ -196,7 +196,7 @@ export default function RegisterPage() {
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="Enter your email"
+                                placeholder="Nhập địa chỉ email"
                                 value={formData.email}
                                 onChange={handleInputChange('email')}
                                 className={validationErrors.email ? 'border-red-500' : ''}

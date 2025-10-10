@@ -3,15 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '../../../../hooks/redux';
-import { addToCart } from '../../../../features/cart/cartSlice';
-import { bookService } from '../../../../services/bookService';
-import { Book } from '../../../../types/book';
-import { Button } from '../../../../components/ui/button';
-import { Card, CardContent } from '../../../../components/ui/card';
-import { Badge } from '../../../../components/ui/badge';
-import { Separator } from '../../../../components/ui/separator';
-import { LoadingSpinner } from '../../../../components/ui/loading-spinner';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { addToCart } from '@/features/cart/cartSlice';
+import { bookService } from '@/services/bookService';
+import { Book } from '@/types/book';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import {
     Star,
     ShoppingCart,

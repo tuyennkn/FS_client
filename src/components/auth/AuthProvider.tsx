@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/redux';
-import { setUser } from '@/features/auth/authSlice';
+import { getCurrentUser, setUser } from '@/features/auth/authSlice';
 import { getAccessToken, getUserInfo } from '@/utils/tokenUtils';
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -16,8 +16,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         const userInfo = getUserInfo();
         
         if (token && userInfo) {
-          // Khôi phục user info vào Redux state
           dispatch(setUser(userInfo));
+          dispatch(getCurrentUser());
         }
       } catch (error) {
         console.error('Failed to restore authentication state:', error);

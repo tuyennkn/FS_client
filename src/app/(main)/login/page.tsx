@@ -41,15 +41,15 @@ export default function LoginPage() {
     const errors: Record<string, string> = {};
 
     if (!formData.username.trim()) {
-      errors.username = 'Username is required';
+      errors.username = 'Tên đăng nhập là bắt buộc';
     } else if (formData.username.length < 3) {
-      errors.username = 'Username must be at least 3 characters';
+      errors.username = 'Tên đăng nhập phải có ít nhất 3 ký tự';
     }
 
     if (!formData.password) {
-      errors.password = 'Password is required';
+      errors.password = 'Mật khẩu là bắt buộc';
     } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
+      errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
     }
 
     setValidationErrors(errors);
@@ -64,7 +64,8 @@ export default function LoginPage() {
     }
 
     try {
-      await dispatch(login(formData)).unwrap();
+      const result = await dispatch(login(formData)).unwrap();
+      console.log('Login result:', result);
       router.push('/');
     } catch (err) {
       // Error is handled by Redux state
@@ -91,10 +92,10 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Welcome Back
+            Chào mừng trở lại
           </CardTitle>
           <CardDescription className="text-center">
-            Sign in to your account to continue
+            Đăng nhập vào tài khoản của bạn để tiếp tục
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,11 +109,11 @@ export default function LoginPage() {
 
             {/* Username Field */}
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Tên đăng nhập</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Enter your username"
+                placeholder="Nhập tên đăng nhập của bạn"
                 value={formData.username}
                 onChange={handleInputChange('username')}
                 className={validationErrors.username ? 'border-red-500' : ''}
@@ -125,12 +126,12 @@ export default function LoginPage() {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Mật khẩu</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
+                  placeholder="Nhập mật khẩu của bạn"
                   value={formData.password}
                   onChange={handleInputChange('password')}
                   className={validationErrors.password ? 'border-red-500' : ''}
@@ -165,20 +166,20 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing In...
+                  Đang đăng nhập...
                 </>
               ) : (
-                'Sign In'
+                'Đăng nhập'
               )}
             </Button>
 
             {/* Register Link */}
             <div className="text-center text-sm">
-              <span className="text-gray-600">Don't have an account? </span>
+              <span className="text-gray-600">Chưa có tài khoản? </span>
               <Link
                 href="/register"
               >
-                Sign up
+                Đăng ký
               </Link>
             </div>
 
@@ -187,7 +188,7 @@ export default function LoginPage() {
               <Link
                 href="/forgot-password"
               >
-                Forgot your password?
+                Quên mật khẩu?
               </Link>
             </div>
           </form>

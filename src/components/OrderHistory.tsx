@@ -14,10 +14,13 @@ import { Package, Calendar, CreditCard } from 'lucide-react';
 export const OrderHistory: React.FC = () => {
   const dispatch = useAppDispatch();
   const { orders, pagination, isLoading, error } = useAppSelector((state) => state.orders);
+  const { user } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    dispatch(fetchUserOrders({ page: 1, limit: 10 }));
-  }, [dispatch]);
+    if (user) {
+      dispatch(fetchUserOrders({ page: 1, limit: 10 }));
+    }
+  }, [dispatch, user]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -38,9 +41,15 @@ export const OrderHistory: React.FC = () => {
 
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'completed':
+      case 'delivered':
         return 'success';
       case 'pending':
+        return 'default';
+      case 'confirmed':
+        return 'default';
+      case 'processing':
+        return 'default';
+      case 'shipping':
         return 'default';
       case 'cancelled':
         return 'destructive';
@@ -49,14 +58,33 @@ export const OrderHistory: React.FC = () => {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'Chờ xác nhận';
+      case 'confirmed':
+        return 'Đã xác nhận';
+      case 'processing':
+        return 'Đang xử lý';
+      case 'shipping':
+        return 'Đang giao';
+      case 'delivered':
+        return 'Đã giao';
+      case 'cancelled':
+        return 'Đã hủy';
+      default:
+        return status;
+    }
+  };
+
   const getPaymentTypeLabel = (type: string) => {
     switch (type) {
       case 'cash':
-        return 'Cash on Delivery';
+        return 'Thanh toán khi nhận hàng';
       case 'card':
-        return 'Credit Card';
+        return 'Thẻ tín dụng';
       case 'online':
-        return 'Online Payment';
+        return 'Thanh toán online';
       default:
         return type;
     }
@@ -64,14 +92,14 @@ export const OrderHistory: React.FC = () => {
 
   const handleLoadMore = () => {
     if (pagination && pagination.page < pagination.totalPages) {
-      dispatch(fetchUserOrders({ 
-        page: pagination.page + 1, 
-        limit: pagination.limit 
+      dispatch(fetchUserOrders({
+        page: pagination.page + 1,
+        limit: pagination.limit
       }));
     }
   };
 
-  if (isLoading && orders.length === 0) {
+  if (isLoading && (!orders || orders.length === 0)) {
     return (
       <div className="flex justify-center py-8">
         <LoadingSpinner size="lg" />
@@ -90,17 +118,17 @@ export const OrderHistory: React.FC = () => {
     );
   }
 
-  if (orders.length === 0) {
+  if (!orders || orders.length === 0) {
     return (
       <Card>
         <CardContent className="text-center py-8">
           <Package className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No orders yet</h3>
+          <h3 className="text-lg font-semibold mb-2">Chưa có đơn hàng nào</h3>
           <p className="text-muted-foreground mb-4">
-            You haven't placed any orders yet. Start shopping to see your order history here.
+            Bạn chưa đặt đơn hàng nào. Hãy bắt đầu mua sắm để xem lịch sử đơn hàng tại đây.
           </p>
           <Link href="/books">
-            <Button>Start Shopping</Button>
+            <Button>Bắt đầu mua sắm</Button>
           </Link>
         </CardContent>
       </Card>
@@ -109,40 +137,40 @@ export const OrderHistory: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Order History</h1>
+      <h1 className="text-2xl font-bold">Lịch sử đơn hàng</h1>
 
       <div className="space-y-4">
-        {orders.map((order) => (
+        {orders && orders.map((order) => (
           <Card key={order.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-lg">Order #{order.id.slice(-8)}</CardTitle>
+                  <CardTitle className="text-lg">Đơn hàng #{order?.id?.slice(-8) || 'N/A'}</CardTitle>
                   <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      {formatDate(order.created_at)}
+                      {order?.createdAt ? formatDate(order.createdAt) : 'N/A'}
                     </div>
                     <div className="flex items-center gap-1">
                       <CreditCard className="h-4 w-4" />
-                      {getPaymentTypeLabel(order.payment_type)}
+                      {order?.payment_type ? getPaymentTypeLabel(order.payment_type) : 'N/A'}
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <Badge variant={getStatusVariant(order.status)}>
-                    {order.status}
+                  <Badge variant={getStatusVariant(order?.status || 'pending')}>
+                    {getStatusLabel(order?.status || 'pending')}
                   </Badge>
                   <p className="text-lg font-semibold mt-1">
-                    {formatPrice(order.total_price)}
+                    {formatPrice(order?.total_price || 0)}
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {order.items.map((item) => (
-                  <div key={`${item.book_id}-${order.id}`} className="flex gap-3">
+                {order?.items && order.items.map((item) => (
+                  <div key={`${item.book_id}-${order?.id || 'unknown'}`} className="flex gap-3">
                     <div className="relative w-12 h-16 flex-shrink-0">
                       <Image
                         src={item.book?.image || '/placeholder-book.jpg'}
@@ -161,7 +189,7 @@ export const OrderHistory: React.FC = () => {
                         {item.book?.author}
                       </p>
                       <div className="flex justify-between items-center mt-1">
-                        <span className="text-sm">Qty: {item.quantity}</span>
+                        <span className="text-sm">SL: {item.quantity}</span>
                         <span className="font-medium">
                           {formatPrice(item.price * item.quantity)}
                         </span>
@@ -170,14 +198,14 @@ export const OrderHistory: React.FC = () => {
                   </div>
                 ))}
               </div>
-              
+
               <div className="flex justify-between items-center mt-4 pt-4 border-t">
                 <span className="text-sm text-muted-foreground">
-                  {order.items.length} item(s)
+                  {order?.items?.length || 0} sản phẩm
                 </span>
-                <Link href={`/orders/${order.id}`}>
+                <Link href={`/orders/${order?.id || ''}`}>
                   <Button variant="outline" size="sm">
-                    View Details
+                    Xem chi tiết
                   </Button>
                 </Link>
               </div>
@@ -194,7 +222,7 @@ export const OrderHistory: React.FC = () => {
             disabled={isLoading}
             variant="outline"
           >
-            {isLoading ? 'Loading...' : 'Load More Orders'}
+            {isLoading ? 'Đang tải...' : 'Tải thêm đơn hàng'}
           </Button>
         </div>
       )}

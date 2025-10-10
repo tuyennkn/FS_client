@@ -10,7 +10,6 @@ import orderReducer from '../features/order/orderSlice';
 
 export const store = configureStore({
   reducer: {
-    user: userReducer,
     auth: authReducer,
     categories: categoryReducer,
     books: bookReducer,

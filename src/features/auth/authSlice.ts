@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { authAPI } from '../../services/apiService';
+import { authAPI, userAPI } from '../../services/apiService';
 import { LoginRequest, RegisterRequest, User, LoginResponse } from '../../types/user';
 import { setAccessToken, setRefreshToken, clearTokens, setUserInfo } from '../../utils/tokenUtils';
 import { ApiResponse } from '@/types';
@@ -81,6 +81,22 @@ export const logout = createAsyncThunk(
       // Even if the API call fails, we should still clear local tokens
       clearTokens();
       return true;
+    }
+  }
+);
+
+export const updateUser = createAsyncThunk(
+  'auth/updateUser',
+  async (userData: Partial<User>, { rejectWithValue }) => { 
+    try {
+      const response: ApiResponse<User> = await userAPI.update(userData as Partial<User> & { id: string });
+      if (response.success) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.message);
+      }
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update user data');
     }
   }
 );

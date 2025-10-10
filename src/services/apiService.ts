@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getAccessToken, getRefreshToken, setAccessToken } from '../utils/tokenUtils';
+import { clearTokens, getAccessToken, getRefreshToken, setAccessToken } from '../utils/tokenUtils';
 import { API_ENDPOINTS } from '../constants/apiEndpoints';
 import { 
   LoginRequest, 
@@ -41,8 +41,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (err) {
         // handle logout
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        clearTokens();
         console.error('Refresh token failed', err);
         if(window.location.pathname !== '/login') {
           window.location.href = '/login';
@@ -90,16 +89,16 @@ export const authAPI = {
 export const userAPI = {
   getById: async (id: string): Promise<ApiResponse<User>> => {
     const response = await api.post(
-      API_ENDPOINTS.USER.GET_BY_ID,
-      { id }
+      API_ENDPOINTS.USER.GET_BY_ID(id)
     );
     return response.data as ApiResponse<User>;
   },
 
   update: async (userData: Partial<User> & { id: string }): Promise<ApiResponse<User>> => {
+    const { id, ...updateData } = userData;
     const response = await api.put(
-      API_ENDPOINTS.USER.UPDATE,
-      userData
+      API_ENDPOINTS.USER.UPDATE(id),
+      updateData
     );
     return response.data as ApiResponse<User>;
   },
