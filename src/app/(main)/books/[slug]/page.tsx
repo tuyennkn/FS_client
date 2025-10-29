@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import BookComments from '@/components/BookComments';
 import {
     Star,
     ShoppingCart,
@@ -315,7 +316,7 @@ export default function BookDetailPage() {
                                     </h3>
                                     <div className="flex flex-wrap gap-2">
                                         {book.attributes.awards.map((award, index) => (
-                                            <Badge key={index} variant="success">
+                                            <Badge key={index} variant="secondary">
                                                 {award}
                                             </Badge>
                                         ))}
@@ -325,6 +326,11 @@ export default function BookDetailPage() {
                         )}
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* Comments Section */}
+            <div className="mt-8">
+                <BookComments bookId={book.id} />
             </div>
         </div>
     );
