@@ -175,7 +175,9 @@ export function Navigation() {
               </DropdownMenu>
             </>
           ) : (
-            <Button className="hidden md:flex">Đăng nhập</Button>
+            <Link href="/login">
+              <Button className="hidden md:flex">Đăng nhập</Button>
+            </Link>
           )}
         </div>
       </div>

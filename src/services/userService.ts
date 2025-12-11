@@ -39,4 +39,13 @@ export const userService = {
     );
     return response.data;
   },
+
+  // Update user persona
+  async updatePersona(persona: string): Promise<User> {
+    const response = await apiService.put<{ data: User }>(
+      API_ENDPOINTS.USER.UPDATE_PERSONA,
+      { persona }
+    );
+    return response.data;
+  },
 };

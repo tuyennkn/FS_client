@@ -9,11 +9,14 @@ import { BookCard } from '@/components/BookCard';
 import { bookService } from '@/services/bookService';
 import { Book } from '@/types/book';
 import { ShoppingBag, BookOpen, Star, TrendingUp, Users, Award } from 'lucide-react';
+import { PersonaSurveyModal } from '@/components/common/PersonaSurveyModal';
 
 export default function Home() {
   const { user } = useAppSelector((state) => state.auth);
   const [featuredBooks, setFeaturedBooks] = useState<Book[]>([]);
+  const [recommendedBooks, setRecommendedBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
+  const [recommendedLoading, setRecommendedLoading] = useState(false);
 
   useEffect(() => {
     const fetchFeaturedBooks = async () => {
@@ -31,8 +34,25 @@ export default function Home() {
     fetchFeaturedBooks();
   }, []);
 
+  useEffect(() => {
+    const fetchRecommendedBooks = async () => {
+      try {
+        setRecommendedLoading(true);
+        const response = await bookService.getRecommendedBooks(9);
+        setRecommendedBooks(response.data);
+      } catch (error) {
+        console.error('Error fetching recommended books:', error);
+      } finally {
+        setRecommendedLoading(false);
+      }
+    };
+
+    fetchRecommendedBooks();
+  }, [user]);
+
   return (
     <>
+      <PersonaSurveyModal />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <section className="text-center mb-12">
@@ -102,6 +122,45 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {featuredBooks.map((book) => (
+                <BookCard key={book.id} book={book} />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Recommended Books Section */}
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                {user ? 'Đề xuất cho bạn' : 'Sách mới nhất'}
+              </h2>
+              <p className="text-gray-600">
+                {user 
+                  ? 'Những cuốn sách phù hợp với sở thích của bạn'
+                  : 'Khám phá những cuốn sách mới được thêm vào bộ sưu tập'}
+              </p>
+            </div>
+            <Link href="/books">
+              <Button variant="outline">
+                Xem tất cả
+              </Button>
+            </Link>
+          </div>
+
+          {recommendedLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {[...Array(9)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-gray-200 aspect-[3/4] rounded-lg mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {recommendedBooks.map((book) => (
                 <BookCard key={book.id} book={book} />
               ))}
             </div>

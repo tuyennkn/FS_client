@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Filter, Grid, List, ShoppingCart, RefreshCw, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Filter, Grid, List, ShoppingCart, RefreshCw, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Sparkles, GitCompare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,10 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 import { bookService } from '@/services/bookService';
 import { Book, BookSearchParams } from '@/types/book';
 import { BookCard } from '@/components/BookCard';
 import { EnhancedBookCard } from '@/components/EnhancedBookCard';
+import { ProductComparison } from '@/components/ProductComparison';
+import { ConversationalSearch } from '@/components/ConversationalSearch';
 import { toast } from '@/utils/toast';
 import { useAppSelector } from '@/hooks/redux';
 
@@ -25,6 +28,7 @@ export default function SearchPage() {
     // State for search mode and data
     const [books, setBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(false);
+    const [initialLoadDone, setInitialLoadDone] = useState(false);
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [searchMode, setSearchMode] = useState<"semantic" | "traditional">(
         (searchParams?.get('mode') as "semantic" | "traditional") || "semantic"
@@ -51,18 +55,89 @@ export default function SearchPage() {
     const [minPriceInput, setMinPriceInput] = useState(searchParams?.get('minPrice') || '');
     const [maxPriceInput, setMaxPriceInput] = useState(searchParams?.get('maxPrice') || '');
 
+    // Comparison states
+    const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
+    const [showComparison, setShowComparison] = useState(false);
+    const [comparisonMode, setComparisonMode] = useState(false);
+
     // Categories mock data (you should fetch from API)
     const categories = useAppSelector(state => state.categories.categories);
 
-    // Fetch initial data
+    // Fetch initial data from URL params
     useEffect(() => {
-        // Chỉ fetch nếu có filters hoặc ở traditional mode
-        if (searchQuery || selectedCategory || minPrice > 0 || maxPrice || sortBy !== 'createdAt') {
-            handleSearch();
-        } else if (searchMode === 'traditional' && !searchQuery && !selectedCategory && minPrice === 0 && !maxPrice && sortBy === 'createdAt') {
-            // Chỉ fetch books mặc định khi ở traditional mode và không có filter nào
-            fetchBooks();
+        if (initialLoadDone) return;
+        
+        const urlQuery = searchParams?.get('q') || '';
+        const urlCategory = searchParams?.get('category') || '';
+        const urlMinPrice = parseInt(searchParams?.get('minPrice') || '0') || 0;
+        const urlMaxPrice = searchParams?.get('maxPrice') ? parseInt(searchParams.get('maxPrice')!) : null;
+        const urlMode = (searchParams?.get('mode') as "semantic" | "traditional") || "semantic";
+        const urlSort = searchParams?.get('sort') || 'createdAt';
+        const urlOrder = searchParams?.get('order') as 'asc' | 'desc' || 'desc';
+        const urlPage = parseInt(searchParams?.get('page') || '1') || 1;
+        
+        // Perform initial search with URL params
+        const performInitialSearch = async () => {
+            try {
+                setLoading(true);
+                
+                if (urlMode === 'semantic' && urlQuery.trim()) {
+                    // Semantic search
+                    const response = await bookService.searchBooks(urlQuery, 12);
+                    // API returns { data: [...], needsClarification: false, ... }
+                    const validResults = Array.isArray(response.data) ? response.data : [];
+                    setBooks(validResults);
+                    setTotalResults(validResults.length);
+                    setTotalPages(1);
+                } else if (urlQuery || urlCategory || urlMinPrice > 0 || urlMaxPrice) {
+                    // Traditional search with filters
+                    const params: BookSearchParams = {
+                        page: urlPage,
+                        limit: 12,
+                        sortBy: urlSort as any,
+                        sortOrder: urlOrder,
+                    };
+                    
+                    if (urlQuery.trim()) params.search = urlQuery;
+                    if (urlCategory) params.category = urlCategory;
+                    if (urlMinPrice > 0) params.minPrice = urlMinPrice;
+                    if (urlMaxPrice) params.maxPrice = urlMaxPrice;
+                    
+                    const response = await bookService.traditionalSearch(params);
+                    const validBooks = Array.isArray(response.data) ? response.data : [];
+                    setBooks(validBooks);
+                    setTotalPages(response.meta?.pagination?.totalPages || 1);
+                    setTotalResults(response.meta?.pagination?.totalItems || 0);
+                } else if (urlMode === 'traditional') {
+                    // Fetch default books for traditional mode without filters
+                    const params: BookSearchParams = {
+                        page: urlPage,
+                        limit: 12,
+                        sortBy: urlSort as any,
+                        sortOrder: urlOrder,
+                    };
+                    
+                    const response = await bookService.traditionalSearch(params);
+                    const validBooks = Array.isArray(response.data) ? response.data : [];
+                    setBooks(validBooks);
+                    setTotalPages(response.meta?.pagination?.totalPages || 1);
+                    setTotalResults(response.meta?.pagination?.totalItems || 0);
+                }
+            } catch (error) {
+                console.error('Initial search failed:', error);
+                toast.error('Không thể tải sách');
+                setBooks([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        // Only perform initial search if there are URL params or in traditional mode
+        if (urlQuery || urlCategory || urlMinPrice > 0 || urlMaxPrice || urlMode === 'traditional') {
+            performInitialSearch();
         }
+        
+        setInitialLoadDone(true);
     }, []);
 
     // Update state when URL params change
@@ -123,7 +198,8 @@ export default function SearchPage() {
             if (maxPrice) params.maxPrice = maxPrice;
 
             const response = await bookService.traditionalSearch(params);
-            setBooks(response.data || []);
+            const validBooks = Array.isArray(response.data) ? response.data : [];
+            setBooks(validBooks);
             setTotalPages(response.meta.pagination.totalPages);
             setTotalResults(response.meta.pagination.totalItems);
         } catch (error) {
@@ -141,9 +217,11 @@ export default function SearchPage() {
             
             if (searchMode === 'semantic' && searchQuery.trim()) {
                 // Semantic search - chỉ khi có query text
-                const results = await bookService.searchBooks(searchQuery, 12);
-                setBooks(results || []);
-                setTotalResults(results?.length || 0);
+                const response = await bookService.searchBooks(searchQuery, 12);
+                // API returns { data: [...], needsClarification: false, ... }
+                const validResults = Array.isArray(response.data) ? response.data : [];
+                setBooks(validResults);
+                setTotalResults(validResults.length);
                 setTotalPages(1); // Semantic search typically returns all results at once
             } else {
                 // Traditional search with filters - có thể không cần query text
@@ -161,9 +239,10 @@ export default function SearchPage() {
                 if (maxPrice) params.maxPrice = maxPrice;
 
                 const response = await bookService.traditionalSearch(params);
-                setBooks(response.data || []);
-                setTotalPages(response.meta.pagination.totalPages);
-                setTotalResults(response.meta.pagination.totalItems);
+                const validBooks = Array.isArray(response.data) ? response.data : [];
+                setBooks(validBooks);
+                setTotalPages(response.meta?.pagination?.totalPages || 1);
+                setTotalResults(response.meta?.pagination?.totalItems || 0);
             }
         } catch (error) {
             console.error('Search failed:', error);
@@ -242,6 +321,44 @@ export default function SearchPage() {
         }, 100);
     };
 
+    // Comparison functions
+    const toggleProductSelection = (bookId: string) => {
+        setSelectedForComparison(prev => {
+            if (prev.includes(bookId)) {
+                return prev.filter(id => id !== bookId);
+            } else if (prev.length >= 5) {
+                toast.error('Chỉ có thể chọn tối đa 5 sản phẩm để so sánh');
+                return prev;
+            } else {
+                return [...prev, bookId];
+            }
+        });
+    };
+
+    const toggleComparisonMode = () => {
+        setComparisonMode(!comparisonMode);
+        if (comparisonMode) {
+            setSelectedForComparison([]);
+        }
+    };
+
+    const handleCompare = () => {
+        if (selectedForComparison.length < 2) {
+            toast.error('Vui lòng chọn ít nhất 2 sản phẩm để so sánh');
+            return;
+        }
+        setShowComparison(true);
+    };
+
+    const clearComparisonSelection = () => {
+        setSelectedForComparison([]);
+        setComparisonMode(false);
+    };
+
+    const getSelectedProducts = () => {
+        return books.filter(book => selectedForComparison.includes(book.id));
+    };
+
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
@@ -302,26 +419,42 @@ export default function SearchPage() {
                         </div>
                     </div>
 
-                    {/* Search Bar */}
+                    {/* Search Bar - Conditional rendering based on mode */}
                     <div className="max-w-3xl mx-auto">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                            <Input
-                                placeholder={searchMode === 'semantic' 
-                                    ? "Tìm kiếm bằng ngôn ngữ tự nhiên: ví dụ 'sách khoa học viễn tưởng về không gian'" 
-                                    : "Tìm kiếm theo tên sách, tác giả..."}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                                className="pl-12 pr-20 h-14 text-lg rounded-xl border-2 focus:border-blue-500"
+                        {searchMode === 'semantic' ? (
+                            <ConversationalSearch
+                                onSearchComplete={(books, query) => {
+                                    // Type guard: Ensure books is an array
+                                    const validBooks = Array.isArray(books) ? books : [];
+                                    setBooks(validBooks);
+                                    setSearchQuery(query);
+                                    setTotalResults(validBooks.length);
+                                    setTotalPages(1);
+                                }}
+                                onClear={() => {
+                                    setBooks([]);
+                                    setSearchQuery('');
+                                    setTotalResults(0);
+                                }}
                             />
-                            <Button 
-                                onClick={handleSearch}
-                                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 px-6 rounded-lg"
-                            >
-                                Tìm kiếm
-                            </Button>
-                        </div>
+                        ) : (
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                                <Input
+                                    placeholder="Tìm kiếm theo tên sách, tác giả..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                                    className="pl-12 pr-20 h-14 text-lg rounded-xl border-2 focus:border-blue-500"
+                                />
+                                <Button 
+                                    onClick={handleSearch}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 px-6 rounded-lg"
+                                >
+                                    Tìm kiếm
+                                </Button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Search Mode Description */}
@@ -344,7 +477,7 @@ export default function SearchPage() {
 
                 {/* Results Header */}
                 <div className="mb-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">
                                 {searchQuery ? (
@@ -364,27 +497,82 @@ export default function SearchPage() {
                             </p>
                         </div>
 
-                        {/* View Mode Toggle */}
-                        <div className="flex border rounded-md">
+                        <div className="flex items-center gap-3">
+                            {/* Comparison Mode Toggle */}
                             <Button
-                                variant={viewMode === "grid" ? "default" : "ghost"}
+                                variant={comparisonMode ? "default" : "outline"}
                                 size="sm"
-                                onClick={() => setViewMode("grid")}
-                                className="rounded-r-none"
+                                onClick={toggleComparisonMode}
+                                className="flex items-center gap-2"
                             >
-                                <Grid className="h-4 w-4" />
+                                <GitCompare className="h-4 w-4" />
+                                So sánh
+                                {selectedForComparison.length > 0 && (
+                                    <Badge variant="secondary" className="ml-1">
+                                        {selectedForComparison.length}
+                                    </Badge>
+                                )}
                             </Button>
-                            <Button
-                                variant={viewMode === "list" ? "default" : "ghost"}
-                                size="sm"
-                                onClick={() => setViewMode("list")}
-                                className="rounded-l-none"
-                            >
-                                <List className="h-4 w-4" />
-                            </Button>
+
+                            {/* View Mode Toggle */}
+                            {/* <div className="flex border rounded-md">
+                                <Button
+                                    variant={viewMode === "grid" ? "default" : "ghost"}
+                                    size="sm"
+                                    onClick={() => setViewMode("grid")}
+                                    className="rounded-r-none"
+                                >
+                                    <Grid className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    variant={viewMode === "list" ? "default" : "ghost"}
+                                    size="sm"
+                                    onClick={() => setViewMode("list")}
+                                    className="rounded-l-none"
+                                >
+                                    <List className="h-4 w-4" />
+                                </Button>
+                            </div> */}
                         </div>
                     </div>
                 </div>
+
+                {/* Comparison Bar - Show when products are selected */}
+                {comparisonMode && selectedForComparison.length > 0 && (
+                    <div className="mb-6 bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between flex-wrap gap-4">
+                            <div className="flex items-center gap-3">
+                                <GitCompare className="h-5 w-5 text-purple-600" />
+                                <div>
+                                    <p className="font-semibold text-purple-900">
+                                        Đã chọn {selectedForComparison.length}/5 sản phẩm để so sánh
+                                    </p>
+                                    <p className="text-sm text-purple-700">
+                                        {selectedForComparison.length >= 2 
+                                            ? 'Nhấn "So sánh ngay" để xem phân tích'
+                                            : `Chọn thêm ${2 - selectedForComparison.length} sản phẩm nữa`}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button
+                                    onClick={handleCompare}
+                                    disabled={selectedForComparison.length < 2}
+                                    className="bg-purple-600 hover:bg-purple-700"
+                                >
+                                    <Sparkles className="h-4 w-4 mr-2" />
+                                    So sánh ngay
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={clearComparisonSelection}
+                                >
+                                    Hủy
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Filters - Only show for traditional search */}
                 {searchMode === 'traditional' && (
@@ -620,7 +808,20 @@ export default function SearchPage() {
                             }`}
                     >
                         {books.map((book) => (
-                            <EnhancedBookCard key={book.id} book={book} viewMode={viewMode} />
+                            <div key={book.id} className="relative">
+                                {comparisonMode && (
+                                    <div className="absolute top-2 left-2 z-10">
+                                        <div className="bg-white rounded-lg shadow-md p-2">
+                                            <Checkbox
+                                                checked={selectedForComparison.includes(book.id)}
+                                                onCheckedChange={() => toggleProductSelection(book.id)}
+                                                className="h-5 w-5"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                <BookCard book={book} />
+                            </div>
                         ))}
                     </div>
                 )}
@@ -725,6 +926,15 @@ export default function SearchPage() {
                     </div>
                 )}
             </div>
+
+            {/* Product Comparison Modal */}
+            {showComparison && (
+                <ProductComparison
+                    selectedProducts={getSelectedProducts()}
+                    onClose={() => setShowComparison(false)}
+                    onClearSelection={clearComparisonSelection}
+                />
+            )}
         </div>
     );
 }

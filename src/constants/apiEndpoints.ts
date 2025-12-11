@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
     ME: '/auth/me',
     GET_BY_ID: (id: string) => `/user/${id}`,
     UPDATE: (id: string) => `/user/${id}`,
+    UPDATE_PERSONA: '/user/persona',
   },
   
   // Category endpoints
@@ -28,8 +29,10 @@ export const API_ENDPOINTS = {
   BOOK: {
     ALL: '/book/all',
     FEATURED: '/book/featured',
+    RECOMMENDED: '/book/recommended',
     GET_BY_ID: '/book/getBook',
     GET_BY_SLUG: '/book/getBook',
+    GET_RELATED: (id: string) => `/book/${id}/related`,
     SEMATIC_SEARCH: '/book/search',
     SEARCH_FILTERS: '/book/search-filters',
   },

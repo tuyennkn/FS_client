@@ -48,15 +48,40 @@ export const bookService = {
         return response.data;
     },
 
-    // Search books using semantic search
-    async searchBooks(query: string, limit?: number): Promise<Book[]> {
-        const requestBody: { query: string; limit?: number } = { query };
+    // Search books using semantic search with conversational support
+    async searchBooks(query: string, limit?: number, conversationHistory?: any[]): Promise<any> {
+        const requestBody: any = { query };
         if (limit) requestBody.limit = limit;
+        if (conversationHistory && conversationHistory.length > 0) {
+            requestBody.conversationHistory = conversationHistory;
+        }
 
-        const response = await apiService.post<SearchResponse>(
+        const response = await apiService.post<any>(
             API_ENDPOINTS.BOOK.SEMATIC_SEARCH, 
             requestBody
         );
+        
+        // Return full response to handle needsClarification
+        return response;
+    },
+
+    // Get recommended books (persona-based for logged-in users, newest for guests)
+    async getRecommendedBooks(limit: number = 9): Promise<BookListResponse> {
+        const url = `${API_ENDPOINTS.BOOK.RECOMMENDED}?limit=${limit}`;
+        const response = await apiService.get<BookListResponse>(url);
+        return response;
+    },
+
+    // Get related books (similar books based on title + genre)
+    async getRelatedBooks(bookId: string, limit: number = 5): Promise<BookListResponse> {
+        const url = `${API_ENDPOINTS.BOOK.GET_RELATED(bookId)}?limit=${limit}`;
+        const response = await apiService.get<BookListResponse>(url);
+        return response;
+    },
+
+    // Get persona-based recommendation note for a book
+    async getBookPersonaNote(slug: string): Promise<{ level: 'warning' | 'explore' | 'highly-recommend', reason: string }> {
+        const response = await apiService.get<{ data: { level: 'warning' | 'explore' | 'highly-recommend', reason: string } }>(`${API_ENDPOINTS.BOOK.GET_BY_SLUG}/${slug}/persona-note`);
         return response.data;
     },
 };
