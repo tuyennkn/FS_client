@@ -45,7 +45,12 @@ export const BookList: React.FC<BookListProps> = ({
       setError(null);
       const response = await bookService.getAllBooks(params);
       setBooks(response.data);
-      setPagination(response.pagination);
+      setPagination({
+        page: response.meta.pagination.currentPage,
+        limit: response.meta.pagination.itemsPerPage,
+        total: response.meta.pagination.totalItems,
+        totalPages: response.meta.pagination.totalPages
+      });
     } catch (err: any) {
       setError(err.message || 'Failed to fetch books');
     } finally {
