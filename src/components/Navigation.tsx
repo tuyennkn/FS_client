@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logout } from '@/features/auth/authSlice';
+import { fetchCategories } from '@/features/category/categorySlice';
 import { ShoppingCart, Search, Menu, User } from 'lucide-react';
 import {
   Sheet,
@@ -28,6 +29,7 @@ import { useEffect, useState } from 'react';
 export function Navigation() {
   const user = useAppSelector((state) => state.auth.user);
   const { cart } = useAppSelector((state) => state.cart);
+  const { categories } = useAppSelector((state) => state.categories);
   const dispatch = useAppDispatch();
 
   const [open, setOpen] = useState(false);
@@ -36,24 +38,16 @@ export function Navigation() {
     console.log('User state changed:', user);
   }, [user]);
 
+  useEffect(() => {
+    // Fetch categories nếu chưa có
+    if (categories.length === 0) {
+      dispatch(fetchCategories());
+    }
+  }, [dispatch, categories.length]);
+
   const handleLogout = () => {
     dispatch(logout());
   };
-
-  const categories: string[] = [
-    'Lãng mạn',
-    'Viễn tưởng',
-    'Kinh dị',
-    'Khoa học',
-    'Lịch sử',
-    'Thiếu nhi',
-    'Tiểu sử',
-    'Công nghệ',
-    'Triết học',
-    'Du lịch',
-    'Nấu ăn',
-    'Thơ ca',
-  ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -81,11 +75,11 @@ export function Navigation() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {categories.map((cat) => (
                     <Link
-                      key={cat}
-                      href={`/category/${cat.toLowerCase()}`}
+                      key={cat.id}
+                      href={`/books?category=${cat.id}&mode=traditional`}
                       className="text-sm hover:text-primary transition-colors"
                     >
-                      {cat}
+                      {cat.name}
                     </Link>
                   ))}
                 </div>
@@ -123,11 +117,11 @@ export function Navigation() {
               <nav className="mt-4 flex flex-col gap-4 ps-4 pe-2">
                 {categories.map((cat) => (
                   <Link
-                    key={cat}
-                    href={`/category/${cat.toLowerCase()}`}
+                    key={cat.id}
+                    href={`/books?category=${cat.id}&mode=traditional`}
                     onClick={() => setOpen(false)}
                   >
-                    {cat}
+                    {cat.name}
                   </Link>
                 ))}
                 <Link href="/about" onClick={() => setOpen(false)}>Giới thiệu</Link>
