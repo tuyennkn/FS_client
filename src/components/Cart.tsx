@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { 
   fetchCart, 
@@ -10,7 +11,6 @@ import {
   removeFromCart, 
   clearCart 
 } from '../features/cart/cartSlice';
-import { createOrder } from '../features/order/orderSlice';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -18,9 +18,9 @@ import { LoadingSpinner } from './ui/loading-spinner';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 
 export const Cart: React.FC = () => {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const { cart, isLoading, error } = useAppSelector((state) => state.cart);
-  const { isLoading: orderLoading } = useAppSelector((state) => state.orders);
 
   useEffect(() => {
     dispatch(fetchCart());
@@ -53,14 +53,9 @@ export const Cart: React.FC = () => {
     }
   };
 
-  const handleCheckout = async () => {
-    try {
-      await dispatch(createOrder({ payment_type: 'cash' })).unwrap();
-      alert('Order created successfully!');
-    } catch (error) {
-      console.error('Error creating order:', error);
-      alert('Failed to create order. Please try again.');
-    }
+  const handleCheckout = () => {
+    // Redirect to checkout page where shipping info will be collected
+    router.push('/checkout');
   };
 
   const formatPrice = (price: number) => {
@@ -230,10 +225,10 @@ export const Cart: React.FC = () => {
               
               <Button
                 onClick={handleCheckout}
-                disabled={orderLoading || isLoading}
+                disabled={isLoading}
                 className="w-full"
               >
-                {orderLoading ? 'Processing...' : 'Proceed to Checkout'}
+                Proceed to Checkout
               </Button>
               
               <Link href="/books">

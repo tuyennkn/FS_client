@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, Filter, Grid, List, ShoppingCart, RefreshCw, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Sparkles, GitCompare } from 'lucide-react';
@@ -21,7 +22,7 @@ import { ConversationalSearch } from '@/components/ConversationalSearch';
 import { toast } from '@/utils/toast';
 import { useAppSelector } from '@/hooks/redux';
 
-export default function SearchPage() {
+function SearchPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -936,5 +937,20 @@ export default function SearchPage() {
                 />
             )}
         </div>
+    );
+}
+
+export default function SearchPage() {
+    return (
+        <Suspense fallback={
+            <div className="container mx-auto px-4 py-8">
+                <div className="animate-pulse space-y-4">
+                    <div className="h-12 bg-gray-200 rounded w-full"></div>
+                    <div className="h-64 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+        }>
+            <SearchPageContent />
+        </Suspense>
     );
 }
