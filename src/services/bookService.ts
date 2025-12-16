@@ -48,20 +48,14 @@ export const bookService = {
         return response.data;
     },
 
-    // Search books using semantic search with conversational support
-    async searchBooks(query: string, limit?: number, conversationHistory?: any[]): Promise<any> {
-        const requestBody: any = { query };
-        if (limit) requestBody.limit = limit;
-        if (conversationHistory && conversationHistory.length > 0) {
-            requestBody.conversationHistory = conversationHistory;
-        }
-
+    // Smart search - AI automatically determines vector or keyword search
+    async searchBooks(query: string): Promise<any> {
         const response = await apiService.post<any>(
             API_ENDPOINTS.BOOK.SEMATIC_SEARCH, 
-            requestBody
+            { query }
         );
         
-        // Return full response to handle needsClarification
+        // Response includes: queryType, searchQuery, filters (if keyword), data
         return response;
     },
 
